@@ -93,40 +93,51 @@
         function showtasks() {
             var list = $("#main");
             list.empty();
-            var ul = document.createElement('ul');
+            var table = document.createElement('table');
+            table.setAttribute("class","col-md-8 offset-md-3")
             $.getJSON("http://api2.local.geekydev.com/read.php", function (data) {
                 $.each(data, function(key,value){
-                    var li = document.createElement('li');
+                    var tr = document.createElement('tr');
+                    var td_caption = document.createElement('td');
+                    var td_checkbox = document.createElement('td');
+                    var td_edit = document.createElement('td');
+                    var td_delete = document.createElement('td');
+                    
                     var checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.setAttribute("class","mx-2");
+                    td_checkbox.appendChild(checkbox);
+
                     var caption = document.createTextNode(value.caption);
+                    td_caption.appendChild(caption);
                     if(value.is_completed == 1){
                         checkbox.setAttribute("checked","true");
                         checkbox.setAttribute("onchange", "toggle("+value.id+")");
-                        li.setAttribute("style","text-decoration: line-through");
+                        tr.setAttribute("style","text-decoration: line-through");
                     }
                     else{
-                        li.setAttribute("style","text-decoration: none");
+                        tr.setAttribute("style","text-decoration: none");
                         checkbox.setAttribute("onchange", "toggle("+value.id+")");
                     }
                     var editbtn = document.createElement('button');
                     editbtn.innerHTML = 'Edit';
                     editbtn.setAttribute("onclick", "edit("+value.id+",'"+value.caption+"')" );
                     editbtn.className = 'btn btn-secondary';
+                    td_edit.appendChild(editbtn);
 
                     var dltbtn = document.createElement('button');
                     dltbtn.innerHTML = 'Delete';
                     dltbtn.setAttribute("onclick", "remove(" + value.id + ")");
                     dltbtn.className = 'btn btn-danger';
+                    td_delete.appendChild(dltbtn);
 
-                    li.appendChild(checkbox);
-                    li.appendChild(caption);
-                    li.appendChild(editbtn);
-                    li.appendChild(dltbtn);
+                    tr.appendChild(td_caption);
+                    tr.appendChild(td_checkbox);
+                    tr.appendChild(td_edit);
+                    tr.appendChild(td_delete);
 
-                    ul.appendChild(li);
-                    document.getElementById('main').appendChild(ul);
+                    table.appendChild(tr);
+                    document.getElementById('main').appendChild(table);
                 });
 
             });
@@ -136,18 +147,22 @@
 
 <body>
     <div class="container">
-        <p class="mt-4">TODO API</p>
-            <div class="row mt-4">
-                <div class="col-md-4">
+        <p class="mt-4 offset-md-5">TODO API</p>
+            <div class="row mt-4 offset-md-3">
+                <div class="col-md-6">
                     <input type="text" class="form-control" id="task"/>
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary btn-block" onclick="additem()">Add Task</button>
                 </div>
             </div>
+            <div class="row mt-4 col-md-8 bg-dark offset-md-2">
+                <div class="col-md-5 offset-md-1 py-3 pl-2 text-white">Task</div>
+                <div class="col-md-2 py-3 text-white">Operations</div>
+            </div>
         <div id="main" class="row mt-4">
         </div>
-        <input type="submit" value="Clear" class="btn btn-danger" onclick="removeAll()">
+        <input type="submit" value="Clear" class="btn btn-danger offset-md-3 mt-2" onclick="removeAll()">
     </div>
 </body>
 
