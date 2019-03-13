@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            showtasks();
+        });
+        function additem(){
+            var task = $("#task").val();
+            if(task.trim() != ''){
+                $.ajax({
+                    url: 'http://api2.local.geekydev.com/create.php',
+                    dataType: 'text',
+                    type: 'POST',
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: {
+                        "caption": task,
+                    },
+                    success: function(data, textStatus, jQxhr) {
+                        $("#task").val('');
+                        showtasks();
+                    },
+                    error: function(jQxhr, textStatus, errorThrown){
+                        $("#task").val('');
+                        console.log(errorThrown);
+                    }
+                })
+            }
+        }
+        function remove(id){
+            $.ajax({
+                type:'POST',
+                url:'http://api2.local.geekydev.com/delete.php',
+                dataType: 'text',
+                data: {
+                    'id':id,
+                },
+                success: function(){
+                    showtasks();
+                }
+            });
+        }
+        function removeAll(id){
+            $.ajax({
+                type:'POST',
+                url:'http://api2.local.geekydev.com/delete.php',
+                dataType: 'text',
+                data: { },
+                success: function(){
+                    showtasks();
+                }
+            });
+        }
+        function toggle(id){
+            $.ajax({
+                type:'POST',
+                url:'http://api2.local.geekydev.com/toggle.php',
+                dataType: 'text',
+                data: {
+                    'id':id,
+                },
+                success: function(){
+                    showtasks();
+                }
+            });
+        }
+        function edit(id, caption){
+            var task = prompt("",caption);
+            if(task.trim() != ''){
+                $.ajax({
+                    type:'POST',
+                    url:'http://api2.local.geekydev.com/update.php',
+                    dataType: 'text',
+                    data: {
+                        'id':id,
+                        'caption':task,
+                    },
+                    success: function(){
+                        showtasks();
+                    }
+                });
+            }
+        }
+
+        function showtasks() {
+            var list = $("#main");
+            list.empty();
+            var ul = document.createElement('ul');
+            $.getJSON("http://api2.local.geekydev.com/read.php", function (data) {
+                $.each(data, function(key,value){
+                    var li = document.createElement('li');
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.setAttribute("class","mx-2");
+                    var caption = document.createTextNode(value.caption);
+                    if(value.is_completed == 1){
+                        checkbox.setAttribute("checked","true");
+                        checkbox.setAttribute("onchange", "toggle("+value.id+")");
+                        li.setAttribute("style","text-decoration: line-through");
+                    }
+                    else{
+                        li.setAttribute("style","text-decoration: none");
+                        checkbox.setAttribute("onchange", "toggle("+value.id+")");
+                    }
+                    var editbtn = document.createElement('button');
+                    editbtn.innerHTML = 'Edit';
+                    editbtn.setAttribute("onclick", "edit("+value.id+",'"+value.caption+"')" );
+                    editbtn.className = 'btn btn-secondary';
+
+                    var dltbtn = document.createElement('button');
+                    dltbtn.innerHTML = 'Delete';
+                    dltbtn.setAttribute("onclick", "remove(" + value.id + ")");
+                    dltbtn.className = 'btn btn-danger';
+
+                    li.appendChild(checkbox);
+                    li.appendChild(caption);
+                    li.appendChild(editbtn);
+                    li.appendChild(dltbtn);
+
+                    ul.appendChild(li);
+                    document.getElementById('main').appendChild(ul);
+                });
+
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <p class="mt-4">TODO API</p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="task"/>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-block" onclick="additem()">Add Task</button>
+                </div>
+            </div>
+        <div id="main" class="row mt-4">
+        </div>
+        <input type="submit" value="Clear" class="btn btn-danger" onclick="removeAll()">
+    </div>
+</body>
+
+</html>
